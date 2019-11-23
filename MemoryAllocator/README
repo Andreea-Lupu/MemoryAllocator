@@ -1,0 +1,122 @@
+	Am folosit variabilele globale N -pentru dimensiunea arenei, indice_start 
+-pentru indicele care marcheaza inceputul primului bloc din arena si vectorul v 
+-pentru succesiunea de N octeti(arena)
+
+FUNCTIA INITIALIZE:
+	-aloca dinamic memoria necesara stocarii arenei si seteaza fiecare octet pe 
+0 prin functia calloc (tinem cont de faptul ca sizeof(unsigned char)==0)
+	-seteaza indicele de start indice_start pe 0
+
+FUNCTIA FINALIZE:
+	-elibereaza memoria alocata la initializare prin functia free
+
+FUNCTIA DUMP:
+	-in variabila i pastram indicele primului octet(indicele curent) de pe 
+fiecare linie afisata
+	-variabila j indica pozitia-1 ocupata de un octet pe fiecare linie afisata
+	-functia foloseste structuri repetitive de tip for pentru a afisa pe cate o
+linie cate 16 octeti in format hexazecimal, cu 2 cifre hexa majuscule fiecare, 
+precum si pentru afisarea la inceputul fiecarei linii a indicelui curent în 
+format hexazecimal, cu 8 cifre hexa majuscule
+	-de asemenea, pentru afisare se tine cont ca i+j  (indicele octetului) nu
+trebuie sa fie mai mare decat numarul de octeti ai arenei(N) 
+	-se afiseaza cate un spatiu dupa fiecare octet, doar daca acesta nu este 
+ultimul de pe randul afisat(j<15 si i+j+1<N), iar in cazul in care octetul este 
+al 7-lea de pe rand(j==7), mai afisam inca un spatiu
+	-dupa afisarea indicelui curent si a celor 16 octeti, afisam o linie noua \n
+
+FUNCTIA index_next:
+	-calculeaza valoarea in zecimal a indicelui de la care incepe blocul urmator,
+pornind de la reprezentarea in format little endian pe 4 octeti
+
+FUNCTIA index_back:
+	-calculeaza valoarea in zecimal a indicelui de la care incepe blocul anterior,
+pornind de la reprezentarea in format little endian pe 4 octeti
+
+FUNCTIA index_dim:
+	-calculeaza valoarea in zecimal a dimensiunii sectiunii de date a blocului 
+curent, pornind de la reprezentarea in format little endian pe 4 octeti
+
+FUNCTIA f:
+	-realizeaza reprezentarea unui numar pe 4 octeti in format little endian 
+incepand de la un anumit octet precizat
+
+FUNCTIA ALLOC:
+	-ia in considerare mai multe cazuri:
+1.Cazul in care arena nu are nici un bloc alocat:
+	-blocul se aloca la inceputul arenei
+	-indicele start ramane 0
+	-dimensiunea sectiunii de date se scrie in format little endian pe 4 octeti
+incepand de la v[8]
+	-se afiseaza indicele care marcheaza inceputul sectiunii de date a blocului
+nou alocat(12)
+2.Cazul in care putem aloca un bloc inainte de primul bloc din arena
+	-pentru blocul nou alocat modificam indexul pentru inceputul blocului 
+urmator, dandu-i valoarea indicelui de start	
+	-modificam indicele de start pentru pozitia 0
+	-dimensiunea sectiunii de date se scrie in format little endian pe 4 octeti
+incepand de la v[8]
+	-se afiseaza indicele care marcheaza inceputul sectiunii de date a blocului
+nou alocat(12)
+3.Cazul in care arena contine un singur bloc si nu e spatiu suficient pentru
+alocare inaintea lui, ci doar dupa el
+	-pentru blocul nou alocat modificam indexul pentru inceputul blocului 
+anterior, dandu-i valoarea indicelui de start
+	-dimensiunea sectiunii de date se scrie in format little endian pe 4 octeti
+	-afisam indicele de inceput al sectiunii de date a blocului nou alocat
+4.Cazul in care cautam un loc suficient pentru alocare intre blocurile existente
+sau dupa ultimul bloc	
+	-pastram indicele de inceput al blocului curent in variabila indice_curent,
+iar indicele de inceput al blocului urmator in variabila indice_urmator
+	-daca gasim loc intre doua blocuri succesive atunci modificam indicele 
+primului bloc pentru blocul urmator si indicele celui de al doilea bloc pentru
+blocul anterior(in format little endian pe 4 octeti)
+	-pentru blocul nou alocat setam valoarea indexului pentru inceputul blocului 
+urmator, valoarea indexului pentru inceputul blocului anterior si scriem
+dimensiunea sectiunii de date pentru acest bloc nou alocat(in format little 
+endian pe 4 octeti)
+	-afisam indicele de inceput al sectiunii de date a blocului nou alocat
+	-daca gasim loc dupa ultimul bloc modificam valoarea indexului ultimului
+bloc pentru blocul urmator
+	-pentru blocul nou alocat setam valoarea indexului pentru inceputul blocului 
+anterior si scriem dimensiunea sectiunii de date pentru acest bloc nou alocat(in 
+format little endian pe 4 octeti)
+	-afisam indicele de inceput al sectiunii de date a blocului nou alocat
+5.Daca nu gasim un spatiu suficient de mare pentru alocarea blocului de 
+dimensiune specificata, atunci afisam 0
+
+FUNCTIA FREE:
+	-setam valoarea 0 pentru fiecare octet din sectiunea de date a blocului pe 
+care dorim sa-l eliberam
+1.Blocul pe care dorim sa-l eliberam nu este ultimul din arena
+	-Daca blocul pe care dorim sa il eliberam nu este primul din arena, atunci
+modificam indexul pentru blocul precedent al blolcului care urmeaza dupa cel pe
+care dorim sa il eliberam, precum si indexul pentru blocul urmator al blocului
+de dinaintea celui pe care dorim sa-l eliberam
+	-Daca blocul pe care dorim sa il eliberam este primul din arena, atunci 
+modificam indexul pentru blocul anterior al blocului care urmeaza dupa blocul pe
+care dorim sa-l eliberam si modificam indicele de start cu valoarea indicelui de
+inceput al blocului care urmeaza dupa blocul oe care dorim sa-l eliberam
+2.Blocul pe care dorim sa-l eliberam este ultimul din arena
+	-Daca blocul pe care dorim sa il eliberam nu este primul din arena, atunci
+indexul pentru blocul urmator al blocului de dinaintea celui pe care dorim sa-l 
+eliberam, dandu-i valoarea 0
+	-Daca blocul pe care dorim sa il eliberam este primul din arena, atunci
+setam valoarea 0 pentru indicele de start, pentru ca arena nu mai are niciun 
+bloc alocat
+
+Apoi setam valoarea 0 pentru fiecare octet din sectiunea de gestiune a blocului 
+pe care dorim sa-l eliberam
+
+FUNCTIA FILL:
+1.Daca numarul de octeti pentru care vrem sa setam o anumita valoare este mai 
+mic sau egal cu dimensiunea sectiunii de date a blocului indicelui precizat,
+atunci setam acea valoare pe fiecare octet cerut
+2.Daca numarul de octeti pentru care vrem sa setam o anumita valoare este mai 
+mare decat dimensiunea sectiunii de date a blocului indicelui precizat, atunci
+setam acea valoare pe fiecare octet al acestei sectiuni de date si continuam sa
+setam aceasta valoare pe octetii sectiunilor de date ale blocurilor urmatoare
+pana ajungem la dimensiunea ceruta, oprindu-ne insa daca ajungem la ultimul
+bloc alocat din arena.  
+	
+	
